@@ -15,7 +15,7 @@ QUERIES = [
     ),
     (
         "query_3_complex",
-        "NVIDIA was founded by Jensen Huang. How many days has the company existed as of today, and if its current market capitalization were divided evenly across every day of its existence, how much value was 'created' per day on average?",
+        "Wikipedia and Google were both founded in roughly the same era. Find each company's exact founding date, calculate the number of days between them (Wikipedia minus Google), and express that gap as a percentage of Wikipedia's total age in days as of today.",
     ),
 ]
 
@@ -26,7 +26,7 @@ def main() -> None:
     for slug, query in QUERIES:
         print(f"\n=== Running {slug} ===")
         print(f"Q: {query}\n")
-        result = run_with_critic(user_query=query, max_critic_retries=2, max_iterations=8)
+        result = run_with_critic(user_query=query, max_critic_retries=2, max_iterations=12)
         json_path, md_path = write_trace(TRACES_DIR, slug, query, result)
         rounds = " -> ".join(r["verdict"] for r in result["critic_rounds"])
         print(f"Status: {result['status']}  Critic: {rounds}")

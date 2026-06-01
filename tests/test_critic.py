@@ -5,7 +5,7 @@ from agent.critic import critique, run_with_critic
 def _llm_returns(*payloads):
     iterator = iter(payloads)
 
-    def fake_call(messages, temperature=0.1):
+    def fake_call(messages, temperature=0.1, model=None):
         return {"content": next(iterator), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
     return fake_call
@@ -33,10 +33,10 @@ def test_run_with_critic_approves_first_pass():
     react_iter = iter([react_payload])
     critic_iter = iter([critic_payload])
 
-    def react_fake(messages, temperature=0.1):
+    def react_fake(messages, temperature=0.1, model=None):
         return {"content": next(react_iter), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
-    def critic_fake(messages, temperature=0.1):
+    def critic_fake(messages, temperature=0.1, model=None):
         return {"content": next(critic_iter), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
     with patch("agent.react_loop.call_json", side_effect=react_fake):
@@ -57,10 +57,10 @@ def test_run_with_critic_rejects_then_approves():
     react_iter = iter([react_round1, react_round2])
     critic_iter = iter([critic_round1, critic_round2])
 
-    def react_fake(messages, temperature=0.1):
+    def react_fake(messages, temperature=0.1, model=None):
         return {"content": next(react_iter), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
-    def critic_fake(messages, temperature=0.1):
+    def critic_fake(messages, temperature=0.1, model=None):
         return {"content": next(critic_iter), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
     with patch("agent.react_loop.call_json", side_effect=react_fake):
@@ -81,10 +81,10 @@ def test_run_with_critic_exhausts_retries():
     react_iter = iter([react_payload] * 10)
     critic_iter = iter([critic_payload] * 10)
 
-    def react_fake(messages, temperature=0.1):
+    def react_fake(messages, temperature=0.1, model=None):
         return {"content": next(react_iter), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
-    def critic_fake(messages, temperature=0.1):
+    def critic_fake(messages, temperature=0.1, model=None):
         return {"content": next(critic_iter), "tokens": {"prompt": 5, "completion": 3}, "latency_ms": 1}
 
     with patch("agent.react_loop.call_json", side_effect=react_fake):

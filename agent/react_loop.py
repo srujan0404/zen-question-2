@@ -6,17 +6,31 @@ from agent.schemas import AgentStep
 from agent.tools import dispatch
 
 
-def run_react(user_query: str, extra_system_notes: list[str], max_iterations: int = 8) -> dict:
-    messages = [{"role": "system", "content": AGENT_SYSTEM_PROMPT}]
-    for note in extra_system_notes:
-        messages.append({"role": "system", "content": note})
-    messages.append({"role": "user", "content": user_query})
+def run_react(
+    user_query: str,
+    extra_system_notes: list[str] | None = None,
+    max_iterations: int = 8,
+    initial_messages: list[dict] | None = None,
+    starting_iter_num: int = 1,
+) -> dict:
+    extra_system_notes = extra_system_notes or []
+
+    if initial_messages is None:
+        messages: list[dict] = [{"role": "system", "content": AGENT_SYSTEM_PROMPT}]
+        for note in extra_system_notes:
+            messages.append({"role": "system", "content": note})
+        messages.append({"role": "user", "content": user_query})
+    else:
+        messages = list(initial_messages)
+        for note in extra_system_notes:
+            messages.append({"role": "system", "content": note})
 
     iterations = []
     total_tokens = 0
     total_latency = 0
 
-    for i in range(1, max_iterations + 1):
+    for offset in range(max_iterations):
+        i = starting_iter_num + offset
         llm_out = call_json(messages=messages)
         total_tokens += llm_out["tokens"]["prompt"] + llm_out["tokens"]["completion"]
         total_latency += llm_out["latency_ms"]
@@ -54,6 +68,7 @@ def run_react(user_query: str, extra_system_notes: list[str], max_iterations: in
                 "latency_ms": llm_out["latency_ms"],
                 "tokens": llm_out["tokens"],
             })
+            messages.append({"role": "assistant", "content": raw})
             return {
                 "iterations": iterations,
                 "final_answer": step.action_input.get("answer", ""),

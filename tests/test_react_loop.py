@@ -5,7 +5,7 @@ from agent.react_loop import run_react
 def _llm_returns(*payloads):
     iterator = iter(payloads)
 
-    def fake_call(messages, temperature=0.1):
+    def fake_call(messages, temperature=0.1, model=None):
         return {"content": next(iterator), "tokens": {"prompt": 10, "completion": 5}, "latency_ms": 1}
 
     return fake_call
